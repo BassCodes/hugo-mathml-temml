@@ -1,5 +1,6 @@
 ---
 title: "Hugo MathML math using Temml"
+math: true
 ---
 
 Hello there!

@@ -1,8 +1,39 @@
+{{/* Copyright 2025 Alexander Bass */}}
+{{/* MIT License */}}
+{{ $port := 31416 }}
+{{ $address := "127.0.0.1" }}
+{{ $tex := .Inner | base64Encode }}
+{{/* Change this value to invalidate all cached math expressions */}}
+{{ $cache_bust := 1 }}
 
-{{.Inner}}
+{{ if not (.Page.Param "math") }}
+    {{ warnf "Math is used despite \"math: true\" not being set in frontmatter on: %s" .Position }}
+{{ end }}
+
+
 {{ if eq .Type "block" }}
-    {{ warnf "Got block math at %s: %s" .Position .Inner }}
+    {{ $url := printf "http://%s:%d/tex2math/block/%s?%d" $address $port $tex $cache_bust }}
+    {{  with resources.GetRemote $url }}
+        {{ with .Err }}
+            {{  errorf "Unable to process math with error %s " . }}
+        {{ else }}
+            {{  $jsonObj := .Content | transform.Unmarshal }}
+            {{ index $jsonObj "data" | safeHTML }}
+        {{ end }}
+    {{ else }}
+        {{ errorf "Unable to process math %s  \nLikely bad tex" .Inner }}
+    {{ end }}
 {{ else }}
-    {{ warnf "Got inline math at %s: %s" .Position .Inner }}
+    {{ $url := printf "http://%s:%d/tex2math/inline/%s?%d" $address $port $tex $cache_bust }}
+    {{  with resources.GetRemote $url }}
+        {{  with .Err }}
+            {{  errorf "Unable to process math with error %s " . }}
+        {{  else }}
+            {{  $jsonObj := .Content | transform.Unmarshal}}
+            {{ index $jsonObj "data" | safeHTML }}
+        {{ end }}
+    {{ else }}
+        {{ errorf "Unable to process math %s  \nLikely bad tex" .Inner }}
+    {{ end }}
 {{ end }}
 
