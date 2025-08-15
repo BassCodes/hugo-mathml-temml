@@ -1,0 +1,8 @@
+
+{{.Inner}}
+{{ if eq .Type "block" }}
+    {{ warnf "Got block math at %s: %s" .Position .Inner }}
+{{ else }}
+    {{ warnf "Got inline math at %s: %s" .Position .Inner }}
+{{ end }}
+
